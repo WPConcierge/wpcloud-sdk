@@ -1,0 +1,6 @@
+parameters:
+    tmpDir: /tmp/phpstan-wpcloud-sdk
+    level: 8
+    paths:
+        - src
+        - tests
