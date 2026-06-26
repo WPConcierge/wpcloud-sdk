@@ -226,17 +226,24 @@ final class Sites extends Resource
     // ---------------------------------------------------------------------
 
     /**
-     * Install or remove site software (async → returns job_id).
+     * Install, activate, lock, or remove site software (async → returns job_id).
      *
-     * POST /site-manage-software/{type}/{site}  (body: software_slug=…)
+     * POST /site-manage-software/{type}/{site}
+     * Body: a `software_slug[<slug>]=<action>` map, e.g.
+     *   software_slug[plugins/woocommerce/latest]=activate
      *
-     * @param string $type "atomic" (external clients) or "wpcom".
+     * @param  string  $type  "atomic" (external clients) or "wpcom".
+     * @param  array<string, string>  $software  Slug => action map. Slugs are
+     *   `plugins/<slug>/<version>`, `themes/<slug>`, `mu-plugins/<slug>/<version>`,
+     *   or a `plugins://url` / `theme://url` form. Actions: install, activate,
+     *   activate-locked, install-locked, deactivate, remove, lock, unlock
+     *   (mu-plugins support install, install-locked, remove, lock, unlock).
      */
-    public function manageSoftware(string $type, string $site, string $softwareSlug): ApiResponse
+    public function manageSoftware(string $type, string $site, array $software): ApiResponse
     {
         return $this->api->post(
             $this->path('site-manage-software', $type, $site),
-            ['software_slug' => $softwareSlug],
+            ['software_slug' => $software],
         );
     }
 

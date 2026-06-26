@@ -113,10 +113,12 @@ class SitesTest extends ApiTestCase
 
     public function testManageSoftware(): void
     {
-        (new Sites($this->client()))->manageSoftware('atomic', '123', 'jetpack');
+        (new Sites($this->client()))->manageSoftware('atomic', '123', [
+            'plugins/woocommerce/latest' => 'activate',
+        ]);
 
         $this->assertPost('site-manage-software/atomic/123');
-        $this->assertBodyContains('software_slug=jetpack');
+        $this->assertBodyContains('software_slug%5Bplugins%2Fwoocommerce%2Flatest%5D=activate');
     }
 
     public function testSetWordPressVersion(): void
