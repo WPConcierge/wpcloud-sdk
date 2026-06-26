@@ -1,6 +1,7 @@
 {
     "name": "wpconcierge/wpcloud-sdk",
     "description": "A complete, 1:1 PHP SDK for the WP Cloud (Automattic Atomic) API.",
+    "version": "1.0.0",
     "type": "library",
     "keywords": ["wp-cloud", "wpcloud", "atomic", "wordpress", "sdk", "api"],
     "homepage": "https://github.com/WPConcierge/wpcloud-sdk",

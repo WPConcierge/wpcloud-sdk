@@ -31,6 +31,8 @@ final class AtomicApi
 
     private ?Email $email = null;
 
+    private ?Domains $domains = null;
+
     private ?Jobs $jobs = null;
 
     private ?Logs $logs = null;
@@ -94,6 +96,11 @@ final class AtomicApi
     public function email(): Email
     {
         return $this->email ??= new Email($this->client);
+    }
+
+    public function domains(): Domains
+    {
+        return $this->domains ??= new Domains($this->client);
     }
 
     public function jobs(): Jobs
