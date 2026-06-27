@@ -404,4 +404,17 @@ final class Sites extends Resource
     {
         return $this->api->post($this->path('site-set-chroot', $site, $desired));
     }
+
+    /**
+     * Set a site's SSH/SFTP access type. End-user sites default to SFTP-only; a
+     * shell (full SSH) must be enabled per site.
+     *
+     * POST /site-set-access-type/{service}/{identifier}/{type}
+     *
+     * @param string $type Access type to set (e.g. "sftp", "ssh").
+     */
+    public function setAccessType(string $service, string $identifier, string $type): ApiResponse
+    {
+        return $this->api->post($this->path('site-set-access-type', $service, $identifier, $type));
+    }
 }

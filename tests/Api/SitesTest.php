@@ -199,4 +199,11 @@ class SitesTest extends ApiTestCase
 
         $this->assertPost('site-set-chroot/123/generic');
     }
+
+    public function testSetAccessType(): void
+    {
+        (new Sites($this->client()))->setAccessType('atomic', '123', 'ssh');
+
+        $this->assertPost('site-set-access-type/atomic/123/ssh');
+    }
 }
