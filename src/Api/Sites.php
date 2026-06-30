@@ -229,21 +229,27 @@ final class Sites extends Resource
      * Install, activate, lock, or remove site software (async → returns job_id).
      *
      * POST /site-manage-software/{type}/{site}
-     * Body: a `software_slug[<slug>]=<action>` map, e.g.
-     *   software_slug[plugins/woocommerce/latest]=activate
+     * Body: form-urlencoded `<slug>=<action>` pairs where each slug is itself a
+     * top-level form key (NOT wrapped under a `software_slug[…]` array), e.g.
+     *   plugins%2Fwoocommerce%2Flatest=activate
+     * Per the WP Cloud API contract the request key IS the software slug and the
+     * value is the action; wrapping the map under `software_slug` makes the
+     * server see no slug keys and reject with "No valid software actions
+     * provided." (HTTP 400).
      *
-     * @param  string  $type  "atomic" (external clients) or "wpcom".
+     *   * @param  string  $type  "atomic" (external clients) or "wpcom".
+     *
+     *   * @param  string  $type  "atomic" (external clients) or "wpcom".
+     *
      * @param  array<string, string>  $software  Slug => action map. Slugs are
      *   `plugins/<slug>/<version>`, `themes/<slug>`, `mu-plugins/<slug>/<version>`,
      *   or a `plugins://url` / `theme://url` form. Actions: install, activate,
-     *   activate-locked, install-locked, deactivate, remove, lock, unlock
-     *   (mu-plugins support install, install-locked, remove, lock, unlock).
      */
     public function manageSoftware(string $type, string $site, array $software): ApiResponse
     {
         return $this->api->post(
             $this->path('site-manage-software', $type, $site),
-            ['software_slug' => $software],
+            $software,
         );
     }
 
