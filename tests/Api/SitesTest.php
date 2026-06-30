@@ -115,10 +115,13 @@ class SitesTest extends ApiTestCase
     {
         (new Sites($this->client()))->manageSoftware('atomic', '123', [
             'plugins/woocommerce/latest' => 'activate',
+            'themes/storefront/latest'   => 'install',
         ]);
 
         $this->assertPost('site-manage-software/atomic/123');
-        $this->assertBodyContains('software_slug%5Bplugins%2Fwoocommerce%2Flatest%5D=activate');
+        // Each slug is a top-level form key (slug=action), not wrapped under software_slug[…].
+        $this->assertBodyContains('plugins%2Fwoocommerce%2Flatest=activate');
+        $this->assertBodyContains('themes%2Fstorefront%2Flatest=install');
     }
 
     public function testSetWordPressVersion(): void

@@ -229,21 +229,27 @@ final class Sites extends Resource
      * Install, activate, lock, or remove site software (async → returns job_id).
      *
      * POST /site-manage-software/{type}/{site}
-     * Body: a `software_slug[<slug>]=<action>` map, e.g.
-     *   software_slug[plugins/woocommerce/latest]=activate
+     * Body: form-urlencoded `<slug>=<action>` pairs where each slug is itself a
+     * top-level form key (NOT wrapped under a `software_slug[…]` array), e.g.
+     *   plugins%2Fwoocommerce%2Flatest=activate
+     * Per the WP Cloud API contract the request key IS the software slug and the
+     * value is the action; wrapping the map under `software_slug` makes the
+     * server see no slug keys and reject with "No valid software actions
+     * provided." (HTTP 400).
      *
-     * @param  string  $type  "atomic" (external clients) or "wpcom".
+     *   * @param  string  $type  "atomic" (external clients) or "wpcom".
+     *
+     *   * @param  string  $type  "atomic" (external clients) or "wpcom".
+     *
      * @param  array<string, string>  $software  Slug => action map. Slugs are
      *   `plugins/<slug>/<version>`, `themes/<slug>`, `mu-plugins/<slug>/<version>`,
      *   or a `plugins://url` / `theme://url` form. Actions: install, activate,
-     *   activate-locked, install-locked, deactivate, remove, lock, unlock
-     *   (mu-plugins support install, install-locked, remove, lock, unlock).
      */
     public function manageSoftware(string $type, string $site, array $software): ApiResponse
     {
         return $this->api->post(
             $this->path('site-manage-software', $type, $site),
-            ['software_slug' => $software],
+            $software,
         );
     }
 
@@ -273,9 +279,14 @@ final class Sites extends Resource
     /**
      * Add persistent site data — values that survive site rebuilds.
      *
-     * POST /site-persist-data/{site}  (body: data[…]=…)
+     * POST /site-persist-data/{site}
+     * Body is keyed per data key: `data[<key>][value]=<val>` to set, or
+     * `data[<key>][delete]=1` to remove. The caller must pass `$data` already in
+     * that per-key shape, e.g. `['flag' => ['value' => 'on']]` — a flat
+     * `['flag' => 'on']` map is rejected by WP Cloud (the value never reaches
+     * the `[value]` slot the server reads).
      *
-     * @param array<string, mixed> $data
+     * @param array<string, array<string, mixed>> $data
      */
     public function persistData(string $site, array $data): ApiResponse
     {
