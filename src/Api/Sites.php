@@ -279,9 +279,14 @@ final class Sites extends Resource
     /**
      * Add persistent site data — values that survive site rebuilds.
      *
-     * POST /site-persist-data/{site}  (body: data[…]=…)
+     * POST /site-persist-data/{site}
+     * Body is keyed per data key: `data[<key>][value]=<val>` to set, or
+     * `data[<key>][delete]=1` to remove. The caller must pass `$data` already in
+     * that per-key shape, e.g. `['flag' => ['value' => 'on']]` — a flat
+     * `['flag' => 'on']` map is rejected by WP Cloud (the value never reaches
+     * the `[value]` slot the server reads).
      *
-     * @param array<string, mixed> $data
+     * @param array<string, array<string, mixed>> $data
      */
     public function persistData(string $site, array $data): ApiResponse
     {
