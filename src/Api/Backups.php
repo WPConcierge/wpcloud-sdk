@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WPConcierge\WPCloud\Api;
 
 use WPConcierge\WPCloud\Http\ApiResponse;
+use WPConcierge\WPCloud\Http\BinaryStream;
 
 /**
  * Backups tag — on-demand backups and backup inspection/restore data.
@@ -39,9 +40,27 @@ final class Backups extends Resource
     }
 
     /**
+     * Download a backup's raw bytes (db = gzipped SQL, fs = bzip2 tar of ./htdocs).
+     *
+     * GET /site-backup-get/{service}/{identifier}/{backup_id}
+     *
+     * The body is streamed, not buffered — real backups run to hundreds of MB.
+     */
+    public function download(string $service, string $identifier, string $backupId): BinaryStream
+    {
+        return $this->api->download($this->path('site-backup-get', $service, $identifier, $backupId));
+    }
+
+    /**
      * Get the data payload for a single backup.
      *
      * GET /site-backup-get/{service}/{identifier}/{backup_id}
+     *
+     * @deprecated Broken by construction: this endpoint returns raw binary, but
+     *             the JSON path buffers the whole body and json_decode()s it, so
+     *             every call throws ApiException('Unparseable response'). Use
+     *             {@see download} instead. Kept only to avoid a breaking change;
+     *             remove on the next major.
      */
     public function get(string $service, string $identifier, string $backupId): ApiResponse
     {

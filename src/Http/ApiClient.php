@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace WPConcierge\WPCloud\Http;
 
+use Generator;
 use JsonException;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use WPConcierge\WPCloud\Exceptions\ApiException;
 
 use function array_key_exists;
@@ -78,6 +80,78 @@ class ApiClient
         }
 
         return $this->request('POST', $path, $options);
+    }
+
+    /**
+     * Stream a raw binary response body (site-backup-get).
+     *
+     * The ordinary {@see request} path is unusable for these endpoints on two
+     * counts: it buffers the whole body via getContent(), and it json_decode()s
+     * it. A backup body is raw bytes (gzipped SQL / bzip2 tar) running to
+     * hundreds of MB, so decoding throws and buffering would exhaust memory.
+     *
+     * The status line and headers are read eagerly here — so an error surfaces
+     * as the usual typed {@see ApiException} before the caller commits to a
+     * stream — while the body stays lazy in {@see BinaryStream::$chunks}.
+     *
+     * @param array<string, scalar> $query
+     */
+    public function download(string $path, array $query = []): BinaryStream
+    {
+        try {
+            $response   = $this->httpClient->request('GET', $this->url($path), [
+                'query'   => $query,
+                'headers' => [
+                    'auth' => $this->apiKey,
+                    // Naming Accept-Encoding ourselves is load-bearing, not
+                    // cosmetic. A db backup IS a gzip file, and WP Cloud serves
+                    // it as `Content-Encoding: gzip` with a Content-Length of
+                    // the *compressed* size. Left to manage the header itself,
+                    // the transport turns on curl's transparent decoding and
+                    // silently inflates the body — yielding 66MB of plain SQL
+                    // for a backup whose Content-Length (and backup:list `bytes`)
+                    // both say 9.7MB. Setting the header explicitly suppresses
+                    // that decoding, so the bytes we hand back are the bytes on
+                    // the wire and Content-Length is telling the truth.
+                    // (fs backups are bzip2 with no Content-Encoding, so this is
+                    // a no-op for them.)
+                    'Accept-Encoding' => 'gzip',
+                ],
+            ]);
+            $statusCode = $response->getStatusCode();
+        } catch (TransportExceptionInterface $e) {
+            throw new ApiException('Transport error contacting WP Cloud API: ' . $e->getMessage(), 0, [], $e);
+        }
+
+        if ($statusCode >= 400) {
+            // Error responses are the ordinary JSON envelope, and small enough
+            // to buffer — hand them to the shared decoder, which always throws.
+            $this->decode($statusCode, $response->getContent(throw: false));
+
+            throw ApiException::fromResponse($statusCode, 'WP Cloud API request failed.');
+        }
+
+        return new BinaryStream($statusCode, $response->getHeaders(throw: false), $this->chunks($response));
+    }
+
+    /**
+     * Lazily yield the response body, chunk by chunk.
+     *
+     * @return Generator<int, string>
+     */
+    private function chunks(ResponseInterface $response): Generator
+    {
+        try {
+            foreach ($this->httpClient->stream($response) as $chunk) {
+                $content = $chunk->getContent();
+
+                if ($content !== '') {
+                    yield $content;
+                }
+            }
+        } catch (TransportExceptionInterface $e) {
+            throw new ApiException('Transport error streaming from WP Cloud API: ' . $e->getMessage(), 0, [], $e);
+        }
     }
 
     /**

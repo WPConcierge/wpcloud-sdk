@@ -30,6 +30,13 @@ final class BackupsTest extends ApiTestCase
         $this->assertGet('site-backup-get/atomic/123/bkp-99');
     }
 
+    public function testDownload(): void
+    {
+        (new Backups($this->client()))->download('atomic', '123', 'bkp-99');
+
+        $this->assertGet('site-backup-get/atomic/123/bkp-99');
+    }
+
     public function testInfo(): void
     {
         (new Backups($this->client()))->info('atomic', '123', 'bkp-99');
