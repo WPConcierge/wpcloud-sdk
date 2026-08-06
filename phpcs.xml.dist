@@ -23,5 +23,10 @@
         <exclude name="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFallbackGlobalName"/>
         <!-- Allow abstract classes without calling them that -->
         <exclude name="WebimpressCodingStandard.NamingConventions.AbstractClass"/>
+        <!-- Likewise traits: `use SiteOption;` reads better than `use SiteOptionTrait;`.
+             Mirrors wpc-cloud, where this was ratified 2026-08-04, so the two PHP repos
+             agree on a project-wide standard. Currently fires on nothing — src/ contains
+             no traits as of 2026-08-06 — so this is preventive, not a fix. !-->
+        <exclude name="WebimpressCodingStandard.NamingConventions.Trait"/>
     </rule>
 </ruleset>
