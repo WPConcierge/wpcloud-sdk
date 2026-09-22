@@ -100,7 +100,27 @@ final class Sites extends Resource
 
     /**
      * Check whether a client can host a domain on WP Cloud. Intended as a
-     * preflight before {@see create()}. `data.allowed` is the boolean verdict.
+     * preflight before {@see create()}.
+     *
+     * The verdict is NOT a boolean field. Read it as:
+     *
+     *  - Allowed  ⇔ `data.allowed === true` — `{"message":"OK","data":{"allowed":true}}`.
+     *  - Refusal  ⇔ anything else, INCLUDING an empty `data`, with the reason
+     *    in `message` — e.g. `{"message":"Restricted domain [wordpress.com]","data":[]}`
+     *    or `{"message":"Domain name already used [x.net]. TXT record
+     *    verification is required to bypass this check.","data":[]}`.
+     *
+     * There is no `allowed: false`. The platform never sends one: on a refusal
+     * the `allowed` key is absent entirely and `data` is an empty array. An
+     * implementer who tests for a false verdict therefore writes a condition
+     * that can never match, and the preflight silently passes every domain it
+     * exists to refuse.
+     *
+     * Concretely, {@see ApiResponse::get()} is `$this->data[$key] ?? $default`,
+     * so `$response->get('allowed')` returns `null` on a refusal — not `false`
+     * — and it cannot distinguish a missing key from one holding `null`. Treat
+     * only a strict `true` as permission; a caller that needs to tell absence
+     * from a stored null must read `->data` directly, which on a refusal is `[]`.
      *
      * GET /check-can-host-domain/{client}/{domain}
      */
