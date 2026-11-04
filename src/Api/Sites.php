@@ -12,8 +12,10 @@ use WPConcierge\WPCloud\Http\ApiResponse;
  *
  * Sites are addressed three ways depending on the endpoint: `{client}`
  * (client-scoped), `{site}` (site ID or domain), and `{service}/{identifier}`
- * (service + ID/domain). Mutating endpoints are usually asynchronous and return
- * a `job_id` in their `data` payload.
+ * (service + ID/domain). Mutating endpoints are usually asynchronous, but the
+ * handle's name varies by endpoint (`job_id`, `atomic_job_id`,
+ * `response_ticket_id`), so each method's docblock names the field the spec
+ * documents. A wrong key reads exactly like an absent handle.
  *
  * @see https://wp.cloud/docs/api/tags/sites.md
  */
@@ -24,8 +26,8 @@ final class Sites extends Resource
     // ---------------------------------------------------------------------
 
     /**
-     * Create a site for a client (async → returns job_id, atomic_site_id,
-     * domain_name).
+     * Create a site for a client (async → returns job_id, response_ticket_id,
+     * atomic_site_id, domain_name).
      *
      * POST /create-site/{client}
      *
@@ -83,7 +85,9 @@ final class Sites extends Resource
     }
 
     /**
-     * Restore an existing site from its own backups (async → returns job_id).
+     * Restore an existing site from its own backups (async → returns
+     * atomic_job_id and response_ticket_id — the spec names the job field
+     * `atomic_job_id`, not `job_id`).
      *
      * POST /restore-site/{site}  (body: restore_from[]=…)
      *
@@ -222,7 +226,8 @@ final class Sites extends Resource
     }
 
     /**
-     * Convert a site's database character set (async → returns job_id).
+     * Convert a site's database character set (returns atomic_site_id, from
+     * and to; the spec documents no job_id).
      *
      * GET /site-convert-db-charset/{service}/{identifier}/{from}/{to}
      */
@@ -246,7 +251,8 @@ final class Sites extends Resource
     // ---------------------------------------------------------------------
 
     /**
-     * Install, activate, lock, or remove site software (async → returns job_id).
+     * Install, activate, lock, or remove site software (async → returns job_id
+     * and response_ticket_id).
      *
      * POST /site-manage-software/{type}/{site}
      * Body: form-urlencoded `<slug>=<action>` pairs where each slug is itself a

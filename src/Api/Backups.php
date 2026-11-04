@@ -18,9 +18,15 @@ use WPConcierge\WPCloud\Http\BinaryStream;
 final class Backups extends Resource
 {
     /**
-     * Request an on-demand backup (async → returns job_id).
+     * Request an on-demand backup (async → returns atomic_backup_request_id).
      *
      * POST /on-demand-backup/create/{site}/{type}
+     *
+     * `data.atomic_backup_request_id` is a correlation id, not a job id: there
+     * is no public endpoint to poll it. Completion arrives through the
+     * `on-demand-backup` webhook — an acknowledgement, then a final event with
+     * `action: created` carrying the original `request_id` and the new
+     * `backup_id`. Each call uses the site's one on-demand slot for its type.
      *
      * @param string $type Backup type: "fs" (filesystem) or "db" (database).
      */
@@ -30,9 +36,13 @@ final class Backups extends Resource
     }
 
     /**
-     * Request deletion of an on-demand backup (async → returns job_id).
+     * Request deletion of an on-demand backup (async → returns
+     * atomic_backup_request_id; no polling endpoint, see {@see create}).
      *
      * POST /on-demand-backup/delete/{site}/{backup_id}
+     *
+     * Only backups of type `ondemand-fs`, `ondemand-db` or legacy `ondemand`
+     * can be deleted.
      */
     public function delete(string $site, string $backupId): ApiResponse
     {

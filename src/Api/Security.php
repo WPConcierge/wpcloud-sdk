@@ -47,7 +47,7 @@ final class Security extends Resource
     }
 
     /**
-     * Scan a site for malware (async → returns job_id).
+     * Scan a site for malware (async → returns response_ticket_id, no job_id).
      *
      * POST /malware/scan/{site}
      *
