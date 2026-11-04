@@ -1,6 +1,8 @@
 # wpcloud-sdk
 
-A complete, **1:1 PHP SDK** for the [WP Cloud](https://wp.cloud) (Automattic Atomic) API. Every endpoint in the [OpenAPI spec](https://wp.cloud/docs/api/openapi.json) — all 17 tags — is exposed as a typed method on a tag resource, reached through a single facade.
+A PHP SDK for the [WP Cloud](https://wp.cloud) (Automattic Atomic) API. Most endpoints in the [OpenAPI spec](https://wp.cloud/docs/api/openapi.json) are exposed as typed methods on tag resources, reached through a single facade.
+
+**Not covered** (checked against the spec on 2026-11-04): `test-status`, `site-apm`, the `migration/*` endpoints, the `site-edge-rules/*` endpoints and `edge-rule-catalog`, `get-available-generations` and `reset-cache-prefix`. Call these directly with `ApiClient` (`get`/`post`) until they get methods.
 
 This is the reusable client extracted from [`wpc-cloud`](https://github.com/WPConcierge/wpc-cloud) (the WPConcierge CLI), packaged for Composer.
 

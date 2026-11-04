@@ -268,8 +268,10 @@ final class Sites extends Resource
      *   * @param  string  $type  "atomic" (external clients) or "wpcom".
      *
      * @param  array<string, string>  $software  Slug => action map. Slugs are
-     *   `plugins/<slug>/<version>`, `themes/<slug>`, `mu-plugins/<slug>/<version>`,
-     *   or a `plugins://url` / `theme://url` form. Actions: install, activate,
+     *   `plugins/<slug>/<version>`, `themes/<slug>/<version>`, a theme with a
+     *   channel segment (`themes/pub/<slug>`, `wordpress/themes/premium/<slug>`),
+     *   `mu-plugins/<slug>/<version>[/<loader-file>]`, or a `plugins://url` /
+     *   `theme://url` form. Actions: install, activate,
      */
     public function manageSoftware(string $type, string $site, array $software): ApiResponse
     {
