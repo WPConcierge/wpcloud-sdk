@@ -3,7 +3,7 @@
 install:
 	composer install
 
-check: cs-fix cs quality
+check: cs quality test
 
 quality:
 	vendor/bin/phpstan --memory-limit=2G analyse

@@ -129,7 +129,7 @@ Reach each [API tag](https://wp.cloud/docs/api/) through its accessor on `Atomic
 
 ```bash
 composer install
-make check   # cs-fix + cs + quality (phpstan)
+make check   # cs + quality (phpstan) + test; changes no file
 make test    # phpunit
 ```
 
