@@ -12,7 +12,7 @@ This is the reusable client extracted from [`wpc-cloud`](https://github.com/WPCo
 composer require wpconcierge/wpcloud-sdk
 ```
 
-Requires PHP 8.2+. Uses [`symfony/http-client`](https://symfony.com/doc/current/http_client.html) for transport.
+Requires PHP 8.3+. Uses [`symfony/http-client`](https://symfony.com/doc/current/http_client.html) for transport.
 
 ## Usage
 
